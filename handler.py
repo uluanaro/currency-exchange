@@ -9,34 +9,40 @@ from controllers.exchange_rates_controller import ExchangeRatesController
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        path = urlparse(self.path).path
-        if path == "/currencies":
-            CurrenciesController(self).get_all()
-        elif path.startswith("/currency/"):
-            code = path[len("/currency/"):]
-            if not code:
-                self.send_json(400, {"message": "Код валюты отсутствует в адресе"})
+        try:
+            path = urlparse(self.path).path
+            if path == "/currencies":
+                CurrenciesController(self).get_all()
+            elif path.startswith("/currency/"):
+                code = path[len("/currency/"):]
+                if not code:
+                    self.send_json(400, {"message": "Код валюты отсутствует в адресе"})
+                else:
+                    CurrenciesController(self).get_by_code(code)
+            elif path == "/exchangeRates":
+                ExchangeRatesController(self).get_all()
+            elif path.startswith("/exchangeRate/"):
+                pair = path[len("/exchangeRate/"):]
+                if not pair:
+                    self.send_json(400, {"message": "Код валюты отсутствует в адресе"})
+                else:
+                    ExchangeRatesController(self).get_by_codes(pair)
+            elif path == "/exchange":
+                ExchangeController(self).exchange()
             else:
-                CurrenciesController(self).get_by_code(code)
-        elif path == "/exchangeRates":
-            ExchangeRatesController(self).get_all()
-        elif path.startswith("/exchangeRate/"):
-            pair = path[len("/exchangeRate/"):]
-            if not pair:
-                self.send_json(400, {"message": "Код валюты отсутствует в адресе"})
-            else:
-                ExchangeRatesController(self).get_by_codes(pair)
-        elif path == "/exchange":
-            ExchangeController(self).exchange()
-        else:
-            self.send_json(404, {"message": "Маршрут не найден"})
+                self.send_json(404, {"message": "Маршрут не найден"})
+        except Exception as e:
+            self.send_json(500, {"message": f"Внутренняя ошибка сервера: {str(e)}"})
 
     def do_POST(self):
-        path = urlparse(self.path).path
-        if path == "/currencies":
-            CurrenciesController(self).create()
-        elif path == "/exchangeRates":
-            ExchangeRatesController(self).create()
+        try:
+            path = urlparse(self.path).path
+            if path == "/currencies":
+                CurrenciesController(self).create()
+            elif path == "/exchangeRates":
+                ExchangeRatesController(self).create()
+        except Exception as e:
+            self.send_json(500, {"message": f"Внутренняя ошибка сервера: {str(e)}"})
 
     def send_json(self, status_code, data):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
@@ -47,9 +53,12 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_PATCH(self):
-        path = urlparse(self.path).path
-        if path.startswith("/exchangeRate/"):
-            pair = path[len("/exchangeRate/"):]
-            ExchangeRatesController(self).update(pair)
-        else:
-            self.send_json(404, {"message": "Маршрут не найден"})
+        try:
+            path = urlparse(self.path).path
+            if path.startswith("/exchangeRate/"):
+                pair = path[len("/exchangeRate/"):]
+                ExchangeRatesController(self).update(pair)
+            else:
+                self.send_json(404, {"message": "Маршрут не найден"})
+        except Exception as e:
+            self.send_json(500, {"message": f"Внутренняя ошибка сервера: {str(e)}"})
