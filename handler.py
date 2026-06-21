@@ -14,12 +14,18 @@ class Handler(BaseHTTPRequestHandler):
             CurrenciesController(self).get_all()
         elif path.startswith("/currency/"):
             code = path[len("/currency/"):]
-            CurrenciesController(self).get_by_code(code)
+            if not code:
+                self.send_json(400, {"message": "Код валюты отсутствует в адресе"})
+            else:
+                CurrenciesController(self).get_by_code(code)
         elif path == "/exchangeRates":
             ExchangeRatesController(self).get_all()
         elif path.startswith("/exchangeRate/"):
             pair = path[len("/exchangeRate/"):]
-            ExchangeRatesController(self).get_by_codes(pair)
+            if not pair:
+                self.send_json(400, {"message": "Код валюты отсутствует в адресе"})
+            else:
+                ExchangeRatesController(self).get_by_codes(pair)
         elif path == "/exchange":
             ExchangeController(self).exchange()
         else:
