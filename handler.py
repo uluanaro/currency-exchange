@@ -3,6 +3,7 @@ import json
 from urllib.parse import urlparse
 
 from controllers.currencies_controller import CurrenciesController
+from controllers.exchange_controller import ExchangeController
 from controllers.exchange_rates_controller import ExchangeRatesController
 
 
@@ -19,6 +20,8 @@ class Handler(BaseHTTPRequestHandler):
         elif path.startswith("/exchangeRate/"):
             pair = path[len("/exchangeRate/"):]
             ExchangeRatesController(self).get_by_codes(pair)
+        elif path == "/exchange":
+            ExchangeController(self).exchange()
         else:
             self.send_json(404, {"message": "Маршрут не найден"})
 
